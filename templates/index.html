@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<body>
+    <center>
+        <div id="img_show" style="position:relative">
+            <div id="imgContainer" style="margin-top:10px;"></div>
+            <form action="/loadImg" method="post">
+                <td>
+                    <input type="file" name="imgFile" accept="image/JPG,image/png" value="上傳文件" id="upload-input"
+                           style="cursor:hand" onchange="showImg(this)" multiple>
+                </td>
+                <td>
+                    <input type="submit" value="提交" style="cursor:hand">
+                </td>
+            </form>
+        </div>
+    </center>
+
+</body>
+<script type="text/javascript">
+    function showImg(img){
+        var files = img.files
+        getImgsByFileReader(document.getElementById("imgContainer"),files)
+    }
+    function getImgsByUrl(files){
+        var elements = ''
+        for(var i = 0 ; i < files.length ; i++){
+            var url = window.URL.createObjectURL(files[i])
+            elements += "<img src='" + url + "'vertical-align:middle;margin-right:5px;'/>"
+        }
+        return elements
+    }
+    function getImgsByFileReader(el,files){
+        for (var i = 0; i < files.length; i++) {
+            var img = document.createElement('img')
+            img.setAttribute('style', 'width: 40px; height: 40px; vertical-align: middle; margin-right: 5px;')
+            el.appendChild(img)
+            var reader = new FileReader()
+            reader.onload = function(e) {
+                img.src = e.target.result
+            }
+            reader.readAsDataURL(files[i])
+        }
+    }
+</script>
+{% endblock %}
