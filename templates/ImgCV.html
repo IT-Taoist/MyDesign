@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>古文本识别</title>
+    <link href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+</head>
+<style>
+    .txt {
+        font-family: auto;
+        white-space: pre-wrap;
+        line-height: 30px;
+        letter-spacing: 30px;
+    }
+
+    #tex {
+        font-family: auto;
+        white-space: pre-wrap;
+        line-height: 30px;
+        letter-spacing: 30px;
+    }
+
+    td {
+        border: 0;
+        text-align: center;
+    }
+</style>
+<body>
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">古文本識別</a>
+        <button hidden>Help</button>
+    </div>
+</nav>
+<center>
+    <div id="img_show" style="position:relative;" class="container" style="margin-top:2em">
+        <form action="/" method="post">
+            <input type="file" id="upload-input" name="img_file" onchange="showImg(this)" class="upload-label" multiple>
+            <input type="submit" value="上傳圖片" style="margin-left: 100px;" id="sub">
+            <div id="imgContainer" style="margin-top: 10px;"></div>
+            <div style="margin-top:10px;">
+                <table class="table table-hover" border="0">
+                    <tr>
+                        <p>
+                        <td>
+                            <pre class="txt">{{info}}</pre>
+                        </td>
+                        <td>
+                            <span id="trans" d="{{simple}}"><pre id="tex"></pre></span>
+                        </td>
+                        </p>
+                    </tr>
+                    <br>
+                    <input onclick="translat()" type="button" value="轉為簡體">
+                </table>
+            </div>
+        </form>
+    </div>
+</center>
+</body>
+<script type="text/javascript">
+    var oTxt = $('p').html();
+    $('p').html(oTxt.replace(/\n/g, '<br>'));
+    $('p').html(oTxt.replace(/\t/g, '&nbsp;&nbsp;'));
+
+    function translat() {
+        var amp1s = document.getElementById('trans').getAttribute('d');
+        $("#tex").text(amp1s);
+    }
+
+    function showImg(obj) {
+        var files = obj.files;
+        getImgsByFileReader(document.getElementById("imgContainer"), files)
+    }
+
+    function getImgsByUrl(files) {
+        var elements = ''
+        for (var i = 0; i < files.length; i++) {
+            var url = window.URL.createObjectURL(files[i])
+            elements += "<img src='" + url + "'style='width:85px;height:85px;vertical-align:middle;' />"
+        }
+        return elements
+    }
+
+    function getImgsByFileReader(el, files) {
+        for (var i = 0; i < files.length; i++) {
+            img = document.createElement('img');
+            img.setAttribute('style', 'width: 85px;height:85px;vertical-align:middle;')
+            el.appendChild(img)
+            var reader = new FileReader()
+            reader.onload = function (e) {
+                img.src = e.target.result
+            }
+            reader.readAsDataURL(files[i])
+        }
+    }
+
+    function uploading() {
+        var formData = new FormData();
+        var img = document.getElementById("upload-input");
+        var fileobj = img.files[0];
+        ;
+        formData.append("classIcon", fileobj);
+        alert(formData.value);
+        $.ajax({
+            type: "post",
+            url: "/",
+            data: formData,
+            async: false,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                console.log(data);
+            }
+        })
+    }
+</script>
+</html>
