@@ -1,28 +1,26 @@
-
 # 导入文件
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import numpy as np
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
+# import tensorflow.compat.v1 as tf
+# tf.disable_v2_behavior()
 import MyDesign.CNNModel as model
 import MyDesign.DividePic as input_data
+import tensorflow as tf
 from tqdm import tqdm
-import time
 # ======================================================================
 # 变量声明
 N_CLASSES = 36
 IMG_W = 85  # resize图像，太大的话训练时间久
 IMG_H = 85
-BATCH_SIZE = 11
+BATCH_SIZE = 16
 CAPACITY = 200
 MAX_STEP = 1000  # 一般大于10K
 learning_rate = 0.0001  # 一般小于0.0001
 
-
 # 获取批次batch
-train_dir = r"C:\Users\Administrator\PycharmProjects\bishe\MyDesign\train_00/" # 训练样本的读入路径
-logs_train_dir = r"C:\Users\Administrator\PycharmProjects\bishe\MyDesign\train_00/" # logs存储路径
+train_dir = r"C:\Users\Administrator\Desktop\bishe\MyDesign\train_00/" # 训练样本的读入路径
+logs_train_dir = r"C:\Users\Administrator\Desktop\bishe\MyDesign\train_00/" # logs存储路径
 # logs_test_dir =  'E:/Re_train/image_data/test'        #logs存储路径
 #train, train_label = input_data.get_files(train_dir,ratio=0.5)
 train, train_label, val, val_label = input_data.get_files(train_dir, 0.3)
@@ -61,23 +59,22 @@ sess.run(tf.global_variables_initializer())
 # 队列监控
 coord = tf.train.Coordinator()
 threads = tf.train.start_queue_runners(sess=sess, coord=coord)
-epochs = 2
+
 # 进行batch的训练
 try:
+    for epoch in range(2):
     # 执行MAX_STEP步的训练，一步一个batch
-    for epoch in (range(epochs)):
         for step in tqdm(np.arange(MAX_STEP)):
             if coord.should_stop():
                 break
             # 启动以下操作节点，有个疑问，为什么train_logits在这里没有开启？
             _, tra_loss, tra_acc = sess.run([train_op, train_loss, train_acc])
 
-
-            if step % 50 ==0:
-                # 每隔50步打印一次当前的loss以及acc，同时记录log，写入writer
+            # 每隔50步打印一次当前的loss以及acc，同时记录log，写入writer
+            if step % 100 == 0:
+                print('train loss = %.2f, train accuracy = %f%%' % ( tra_loss, tra_acc * 100.0))
                 summary_str = sess.run(summary_op)
                 train_writer.add_summary(summary_str, step)
-                print("\033[31;0mtrain loss = %.2f, train accuracy = %.2f%%\033[0m" % (tra_loss, tra_acc * 100.0))
 
             checkpoint_path = os.path.join(logs_train_dir,'thing.ckpt')
             saver.save(sess,checkpoint_path)
@@ -85,7 +82,6 @@ try:
             if (step + 1) == MAX_STEP:
                 checkpoint_path = os.path.join(logs_train_dir, 'model.ckpt')
                 saver.save(sess, checkpoint_path, global_step=step)
-
 
 except tf.errors.OutOfRangeError:
     print('Done training -- epoch limit reached')
