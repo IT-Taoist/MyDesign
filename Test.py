@@ -1,16 +1,18 @@
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import numpy as np
 from PIL import Image
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
+# import tensorflow.compat.v1 as tf
+# tf.disable_v2_behavior()
 import matplotlib.pyplot as plt
 import MyDesign.CNNModel as model
+import tensorflow as tf
 # ======================================================================
 
 N_CLASSES = 36
 
-img_dir = r"C:/Users/Administrator/PycharmProjects/bishe/MyDesign/test/"
-log_dir = r"C:/Users/Administrator/PycharmProjects/bishe/MyDesign/train_00"
+# img_dir = r"C:/Users/Administrator/Desktop/bishe/MyDesign/test/"
+log_dir = r"C:/Users/Administrator/Desktop/bishe/MyDesign/train_00"
 lists = ['chan1891','chen1928','cun2071','di2156','fa2308','gai2439',
          'gan2441','gan2448','hong2673','hua2715','huang2742','huang2745',
          'ji2790','ji2811','jiao2944','ling3373','miao3578','ming3587',
@@ -19,17 +21,15 @@ lists = ['chan1891','chen1928','cun2071','di2156','fa2308','gai2439',
          'yu5185','yuan5210','zai5255','zan5262','zao5276','zhen5370']
 
 def get_one_image(img_dir):
-    imgs = os.listdir(img_dir)
-    img_num = len(imgs)
-    idn = np.random.randint(0,img_num)
-    image = imgs[idn]
-    image_dir = img_dir + image
-    image = Image.open(image_dir)
-    plt.imshow(image)
-    plt.show()
-    image = image.resize([85,85])
-    image_arr = np.array(image)
-    return image_arr
+    try:
+        image = Image.open(img_dir)
+        # plt.imshow(image)
+        # plt.show()
+        image = image.resize([85,85])
+        image_arr = np.array(image)
+        return image_arr
+    except Exception as e:
+        print(e)
 
 #將標籤對應漢字進行輸出
 def changeToChinese(strLabel):
@@ -119,21 +119,22 @@ def test(image_arr):
         x = tf.placeholder(tf.float32, shape=[85, 85, 3])
         saver = tf.train.Saver()
         with tf.Session() as sess :
-            print("Reading checkpoint...")
+            # print("Reading checkpoint...")
             sess.run(tf.global_variables_initializer())
             ckpt = tf.train.get_checkpoint_state(log_dir)
             if ckpt and ckpt.model_checkpoint_path:
                 # print(ckpt.model_checkpoint_path)
                 saver.restore(sess, ckpt.model_checkpoint_path)
             # 调用saver.restore()函数，加载训练好的网络模型
-                print('Loading success')
+            #     print('Loading success')
             prediction = sess.run(logits, feed_dict={x: image_arr})
             max_index = np.argmax(prediction)
             lists[max_index] = changeToChinese(lists[max_index])
-            print('預測的標籤序號為：' , max_index )
-            print('檢測為漢字：' , lists[max_index])
-            print('預測的結果與比較可能性為：%.2f'  %prediction[:,max_index])
+            type1 = str(lists[max_index])
+            # type2 = "   預測的結果與比較可能性為： "  + str(round(float(prediction[:,max_index] *100),2)) + "%"
+            info = type1
+    return info
 
-if __name__ == '__main__':
-    img = get_one_image(img_dir)
-    test(img)
+# 取文件夹中一张图片进行测试，看是否能显示信息
+# test(get_one_image('C:/Users/Administrator/Desktop/bishe/MyDesign/test/tyh.JPG'))
+
